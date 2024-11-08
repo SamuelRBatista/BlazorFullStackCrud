@@ -1,0 +1,141 @@
+﻿@page "/product"
+@page "/product/{id:int}"
+@inject IProductService ProductService
+
+@if (Id == null)
+{
+    <PageTitle>Produto</PageTitle>
+    <h3>Cadastro</h3>
+}
+else
+{
+    <PageTitle>Edit @product.ProductName</PageTitle>
+    <h3>Edit @product.ProductName</h3>
+}
+
+<EditForm Model="product" OnSubmit="HandleSubmit" class="row">
+
+    <div class="form-group col-md-6">
+        <label for="firstname">Código</label>
+        <InputText id="code" @bind-Value="product.Code" class="form-control"></InputText>
+    </div>
+
+     <div class="form-group col-md-6">
+        <label for="productname">Nome</label>
+        <InputText id="productname" @bind-Value="product.ProductName" class="form-control"></InputText>
+    </div>
+
+     <div>
+        <label for="productdescribe">Descrição</label>
+        <InputText id="productdescribe" @bind-Value="product.ProductDescribe" class="form-control"></InputText>
+    </div>
+
+        <div class="col-md-6">
+        <label for="supplier">Fornecedor</label>
+        <InputText id="supplier" @bind-Value="product.Supplier" class="form-control"></InputText>
+    </div>
+
+    <div class="col-md-2">
+        <label for="stockminimium">Quant Minima</label>
+        <InputNumber id="stockminimium" @bind-Value="product.MinimumStock" class="form-control"></InputNumber>
+    </div>
+
+     <div class="col-md-2">
+        <label for="stock">Estoque</label>
+        <InputNumber id="stock" @bind-Value="product.Stock" class="form-control"></InputNumber>
+    </div>
+
+    <div class="col-md-2">
+        <label for="prohibited">Entrada</label>
+        <InputNumber id="prohibited" @bind-Value="product.Prohibited" class="form-control"></InputNumber>
+    </div>
+
+    <div class="col-md-2">
+        <label for="purchaseValue">Valor de Compra</label>
+        <InputNumber id="purchaseValue" @bind-Value="product.PurchaseValue" class="form-control"></InputNumber>
+    </div>
+
+     <div class="col-md-2">
+        <label for="unitaryvenda">Preço Unit</label>
+        <InputNumber id="unitaryvenda" @bind-Value="product.UnitaryValue" class="form-control"></InputNumber>
+    </div>
+
+        <div class="col-md-2">
+        <label for="salevenda">Venda</label>
+        <InputNumber id="salevalue" @bind-Value="product.SaleValue" class="form-control"></InputNumber>
+    </div>
+
+    <div class="col-md-2">
+        <label for="profite">Lucro</label>
+        <InputNumber id="profit" @bind-Value="product.Profit" class="form-control"></InputNumber>
+    </div>
+
+        <div class="col-md-4">
+        <label>Categorias</label>
+        <InputSelect @bind-Value="product.CategoryId" class="form-select">
+            @foreach (var categories in ProductService.Categories)
+            {
+                <option value="@categories.Id">@categories.Name</option>
+            }
+        </InputSelect>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-command">@btnText</button>
+    <button type="button" class="btn btn-danger btn-command" @onclick="DeleteProduct"> Delete Produto</button>
+   
+</EditForm>
+
+
+@code {
+
+    [Parameter]
+    public int? Id { get; set; }    
+    string btnText = string.Empty;
+
+    Product product = new Product { Category = new Category() };
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        btnText = Id == null ? "Salvar novo produto" : "Alterar produto";
+        await ProductService.GetCategories();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        if (Id == null)
+        {
+            product.Category = ProductService.Categories[0];
+            product.CategoryId = product.Category.Id;
+        }
+        else
+        {
+            product = await ProductService.GetSingleProduct((int)Id);
+        }
+    }
+
+
+    async Task HandleSubmit()
+    {
+
+        if (Id == null)
+        {
+            await ProductService.CreateProduct(product);
+        }
+        else
+        {
+            await ProductService.UpdateProduct(product);
+        }
+    }
+
+    async Task DeleteProduct()
+    {
+        await ProductService.Delete(product.Id);
+    }
+
+
+}
+
